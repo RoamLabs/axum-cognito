@@ -28,17 +28,16 @@ where
     /// Create a new `CognitoValidator`.
     ///
     /// # Arguments
-    /// * `token_type` - type of token to validate TODO: add docs link for the types of token
-    /// * `cognito_client_id` - client id for your Cognito client
-    /// * `cognito_pool_id` - pool id for your Cognito pool
-    /// * `cognito_region` - AWS region your Cognito pool is in
+    /// * `token_type` - type of token to validate, one of `ID` or `Access`
+    /// * `cognito_client_id` - client id of the Cognito client
+    /// * `cognito_pool_id` - pool id for the Cognito pool
+    /// * `cognito_region` - AWS region of the Cognito pool
     ///
-    ///
-    /// # Returns
-    /// New CognitoValidator
+    /// # Returns
+    /// a new `CognitoValidator`
     ///
     /// # Errors
-    /// Returns an error if the CognitoValidator cannot be created
+    /// Returns an error if the `CognitoValidator` cannot be created
     pub async fn new(
         token_type: OAuthTokenType,
         cognito_client_id: &str,
@@ -73,11 +72,11 @@ where
     /// # Arguments
     /// * `token` - token to validate
     ///
-    /// # Returns
+    /// # Returns
     /// User claims extracted from the provided token
     ///
     /// # Errors
-    /// returns and error if the user claims cannot be deserialized
+    /// returns an error if the user claims cannot be deserialized
     pub async fn validate_token(&self, token: &str) -> Result<Option<UC>, AxumCognitoError> {
         let verification = self.key_set.verify(token, &self.token_verifier).await;
         if let Ok(claims) = verification {

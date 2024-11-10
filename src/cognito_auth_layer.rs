@@ -7,7 +7,9 @@ use tower::{Layer, Service};
 
 use crate::{AxumCognitoError, CognitoValidator, OAuthTokenType};
 
-/// Layer for authorising routes using AWS Cognito using
+/// Layer for authorising routes using AWS Cognito
+///
+/// This layer uses the `Authorization` header. The haeder is decoded and the User Claims extracted
 #[derive(Clone)]
 pub struct CognitoAuthLayer<UC>
 where
@@ -20,10 +22,25 @@ impl<UC> CognitoAuthLayer<UC>
 where
     UC: for<'de> serde::Deserialize<'de>,
 {
+    /// Create a layer directly from a validator
+    #[must_use]
     pub fn from_validator(validator: CognitoValidator<UC>) -> Self {
         Self { validator }
     }
 
+    /// Create a layer
+    ///
+    /// # Arguments
+    /// * `token_type` - type of token to validate, one of `ID` or `Access`
+    /// * `cognito_client_id` - client id of the Cognito client
+    /// * `cognito_pool_id` - pool id for the Cognito pool
+    /// * `cognito_region` - AWS region of the Cognito pool
+    ///
+    /// # Returns
+    /// a new `CognitoAuthLayer`
+    ///
+    /// # Errors
+    /// Returns an `AxumCognitoError` if the construction of the validator fails
     pub async fn new(
         token_type: OAuthTokenType,
         cognito_client_id: &str,
@@ -87,7 +104,7 @@ where
         let mut inner = std::mem::replace(&mut self.inner, clone);
         Box::pin(async move {
             let (parts, body) = request.into_parts();
-            let headers = parts.headers.clone();
+            let headers = &parts.headers;
 
             let Some(header_value) = headers.get("Authorization") else {
                 let response = create_bad_request_response("Missing 'Authorization' header");
