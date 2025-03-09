@@ -9,7 +9,7 @@ use crate::{AxumCognitoError, CognitoValidator, OAuthTokenType};
 
 /// Layer for authorising routes using AWS Cognito
 ///
-/// This layer uses the `Authorization` header. The haeder is decoded and the User Claims extracted
+/// This layer uses the `Authorization` header. The header is decoded and the User Claims extracted
 #[derive(Clone)]
 pub struct CognitoAuthLayer<UC>
 where

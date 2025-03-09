@@ -45,11 +45,11 @@ where
         cognito_region: &str,
     ) -> Result<Self, AxumCognitoError> {
         let key_set = KeySet::new(cognito_region, cognito_pool_id)
-            .map_err(|error| AxumCognitoError::JsonwebtokensCognito(error.to_string()))?;
+            .map_err(AxumCognitoError::JsonwebtokensCognito)?;
         key_set
             .prefetch_jwks()
             .await
-            .map_err(|error| AxumCognitoError::JsonwebtokensCognito(error.to_string()))?;
+            .map_err(AxumCognitoError::JsonwebtokensCognito)?;
 
         let token_verifier = match token_type {
             OAuthTokenType::Id => key_set

@@ -23,7 +23,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum AxumCognitoError {
     #[error("Failed to build key set: `{0}`")]
-    JsonwebtokensCognito(String),
+    JsonwebtokensCognito(jsonwebtokens_cognito::Error),
     #[error(transparent)]
     Jsonwebtokens(#[from] jsonwebtokens::error::Error),
     #[error(transparent)]
