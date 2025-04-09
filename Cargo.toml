@@ -1,11 +1,11 @@
 [package]
 name = "axum-cognito"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 authors = ["Roam <open-source@go-roam.co>", "Benjamin Ellis <ben@go-roam.co>"]
 
 [dependencies]
-axum = "0.8.1"
+axum = "0.8.3"
 jsonwebtokens = "1.2.0"
 jsonwebtokens-cognito = "0.1.1"
 futures-util = "0.3.30"
