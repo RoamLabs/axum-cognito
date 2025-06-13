@@ -12,7 +12,8 @@ use crate::{AxumCognitoError, CognitoValidator, OAuthTokenType};
 
 /// Layer for authorising routes using AWS Cognito
 ///
-/// This layer uses the `Authorization` header. The header is decoded and the User Claims extracted
+/// This layer uses the `Authorization` header. The header is decoded and the User Claims
+/// extracted, and insertd into the requests extensions.
 #[derive(Clone)]
 pub struct CognitoAuthLayer<UC>
 where
@@ -52,6 +53,7 @@ where
         cognito_pool_id: &str,
         cognito_region: &str,
     ) -> Result<Self, AxumCognitoError> {
+        tracing::info!("creating a new layer");
         Ok(Self {
             validator: CognitoValidator::new(
                 token_type,
@@ -101,6 +103,7 @@ where
     }
 
     fn call(&mut self, request: Request) -> Self::Future {
+        tracing::info!("call for new req");
         let validator = self.validator.clone();
 
         let (parts, body) = request.into_parts();
