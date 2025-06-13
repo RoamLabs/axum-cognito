@@ -69,7 +69,7 @@ where
 
 impl<S, UC> Layer<S> for CognitoAuthLayer<UC>
 where
-    UC: for<'de> serde::Deserialize<'de> + Clone,
+    UC: for<'de> serde::Deserialize<'de>,
 {
     type Service = CognitoAuthMiddleware<S, UC>;
     fn layer(&self, inner: S) -> Self::Service {
@@ -91,7 +91,7 @@ where
 
 impl<S, UC> Service<Request> for CognitoAuthMiddleware<S, UC>
 where
-    UC: for<'de> serde::Deserialize<'de> + Clone + Send + Sync + 'static + std::fmt::Debug,
+    UC: for<'de> serde::Deserialize<'de> + Clone + Send + Sync + 'static,
     S: Service<Request, Response = Response<Body>> + Clone + Send + 'static,
 {
     type Response = Response;
@@ -166,7 +166,6 @@ pub enum ResponseFuture<F> {
         response_future: F,
     },
     Failure {
-        #[pin]
         resp: fn(&'static str) -> Response,
         arg: &'static str,
     },
@@ -202,16 +201,17 @@ where
     }
 }
 
-fn create_bad_request_response(body_text: &'static str) -> Response {
+fn create_response(body_text: &'static str, status_code: StatusCode) -> Response {
     let mut response = Response::default();
-    *response.status_mut() = StatusCode::BAD_REQUEST;
+    *response.status_mut() = status_code;
     *response.body_mut() = Body::from(body_text);
     response
 }
 
+fn create_bad_request_response(body_text: &'static str) -> Response {
+    create_response(body_text, StatusCode::BAD_REQUEST)
+}
+
 fn create_unauthroised_response(body_text: &'static str) -> Response {
-    let mut response = Response::default();
-    *response.status_mut() = StatusCode::UNAUTHORIZED;
-    *response.body_mut() = Body::from(body_text);
-    response
+    create_response(body_text, StatusCode::UNAUTHORIZED)
 }
