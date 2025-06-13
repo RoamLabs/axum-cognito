@@ -53,7 +53,6 @@ where
         cognito_pool_id: &str,
         cognito_region: &str,
     ) -> Result<Self, AxumCognitoError> {
-        tracing::info!("creating a new layer");
         Ok(Self {
             validator: CognitoValidator::new(
                 token_type,
@@ -103,24 +102,19 @@ where
     }
 
     fn call(&mut self, request: Request) -> Self::Future {
-        tracing::info!("call for new req");
         let validator = self.validator.clone();
 
         let (parts, body) = request.into_parts();
         let headers = &parts.headers;
 
-        tracing::info!("getting auth header..");
         let Some(header_value) = headers.get("Authorization") else {
-            tracing::info!("missing auth header");
             return ResponseFuture::Failure {
                 resp: create_bad_request_response,
                 arg: "Missing 'Authorization' header",
             };
         };
 
-        tracing::info!("getting raw token as str");
         let Ok(raw_token) = header_value.to_str() else {
-            tracing::info!("failed to get raw token as str");
             return ResponseFuture::Failure {
                 resp: create_bad_request_response,
                 arg: "Malformed token",
@@ -129,18 +123,14 @@ where
 
         let token = raw_token["Bearer ".len()..].trim_start();
 
-        tracing::info!("validating token");
         let Ok(some_claims) = validator.try_validate_token(token) else {
-            tracing::info!("failed to validate token");
             return ResponseFuture::Failure {
                 resp: create_bad_request_response,
                 arg: "Malformed token",
             };
         };
 
-        tracing::info!("getting user claims");
         let Some(user_claims) = some_claims else {
-            tracing::info!("no user claims");
             return ResponseFuture::Failure {
                 resp: create_unauthroised_response,
                 arg: "No user claims",
@@ -150,7 +140,6 @@ where
         let mut request = Request::from_parts(parts, body);
         let extensions = request.extensions_mut();
 
-        tracing::info!("in serting user claims");
         extensions.insert(user_claims);
 
         let response_future = self.inner.call(request);
@@ -178,10 +167,8 @@ where
     type Output = Result<Response, Error>;
 
     fn poll(self: std::pin::Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        tracing::info!("polling future");
         match self.project() {
             EnumProj::Success { response_future } => {
-                tracing::info!("polling success future");
                 // First check if the response future is ready.
                 match response_future.poll(cx) {
                     Poll::Ready(result) => {
@@ -193,7 +180,6 @@ where
                 }
             }
             EnumProj::Failure { resp, arg } => {
-                tracing::info!("polling failure future");
                 let response = resp(arg);
                 Poll::Ready(Ok(response))
             }
