@@ -67,6 +67,26 @@ where
         })
     }
 
+    /// Try to validate a token and return the user claims without performing any network I/O
+    ///
+    /// # Arguments
+    /// * `token` - token to validate
+    ///
+    /// # Returns
+    /// User claims extracted from the provided token
+    ///
+    /// # Errors
+    /// returns an error if the user claims cannot be deserialized
+    pub fn try_validate_token(&self, token: &str) -> Result<Option<UC>, AxumCognitoError> {
+        let verification = self.key_set.try_verify(token, &self.token_verifier);
+        if let Ok(claims) = verification {
+            let user_claims: UC = serde_json::from_value(claims)?;
+            Ok(Some(user_claims))
+        } else {
+            Ok(None)
+        }
+    }
+
     /// Validate a token and return the user claims
     ///
     /// # Arguments
