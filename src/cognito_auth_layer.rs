@@ -103,11 +103,6 @@ where
     fn call(&mut self, request: Request) -> Self::Future {
         let validator = self.validator.clone();
 
-        // see here for why and how to clone the inner service
-        // https://docs.rs/tower/latest/tower/trait.Service.html#be-careful-when-cloning-inner-services
-        let clone = self.inner.clone();
-        let mut inner = std::mem::replace(&mut self.inner, clone);
-
         let (parts, body) = request.into_parts();
         let headers = &parts.headers;
 
@@ -143,7 +138,7 @@ where
         let extensions = request.extensions_mut();
         extensions.insert(user_claims);
 
-        let response_future = inner.call(request);
+        let response_future = self.inner.call(request);
 
         ResponseFuture::Success { response_future }
     }
